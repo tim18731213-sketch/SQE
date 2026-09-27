@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>驱动电机定子零件知识手册</title>
+<style>
+  :root {
+    --primary: #1a5276;
+    --accent: #2e86c1;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --border: #d5dbdb;
+    --text: #2c3e50;
+    --muted: #5d6d7e;
+    --warn: #b03a2e;
+    --warn-bg: #fdedec;
+    --ok: #1e8449;
+    --ok-bg: #eafaf1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    padding: 24px 16px 60px;
+  }
+  .page { max-width: 1080px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a5276 0%, #2471a3 60%, #2e86c1 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 40px 36px 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 10px; letter-spacing: 1px; }
+  .hero p { font-size: 14px; opacity: 0.88; max-width: 720px; }
+  .hero .tags { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero .tags span {
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-size: 12px;
+  }
+
+  .toc {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-size: 13px;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  section {
+    background: var(--card);
+    border-radius: 10px;
+    margin-bottom: 22px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  section > h2 {
+    font-size: 18px;
+    padding: 16px 24px;
+    background: #eaf2f8;
+    color: var(--primary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section > h2 .num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+    background: var(--primary); color: #fff;
+    border-radius: 6px; font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .body { padding: 20px 24px 24px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 12px 0 4px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 9px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f0f4f8;
+    color: var(--primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tr:nth-child(even) td { background: #fafcfd; }
+
+  .steps { display: flex; flex-wrap: wrap; gap: 0; margin: 16px 0; }
+  .step {
+    flex: 1 1 120px;
+    min-width: 110px;
+    background: #eaf2f8;
+    border: 1px solid #b9d3e8;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--primary);
+    position: relative;
+    font-weight: 600;
+  }
+  .step:not(:last-child)::after {
+    content: "▸";
+    position: absolute;
+    right: -9px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 14px;
+    z-index: 2;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11.5px;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+  .tag-key { background: #fdebd0; color: #a04000; }
+  .tag-check { background: #d4efdf; color: #1e8449; }
+  .tag-risk { background: #fadbd8; color: #922b21; }
+
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+  }
+  .risk-card {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--warn);
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: #fffbfb;
+  }
+  .risk-card h4 { font-size: 14px; color: var(--warn); margin-bottom: 6px; }
+  .risk-card p { font-size: 13px; color: var(--muted); }
+  .risk-card .cause { margin-top: 6px; font-size: 12.5px; color: #7b241c; }
+
+  .vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 14px;
+    margin-top: 12px;
+  }
+  .vendor-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: #fdfefe;
+  }
+  .vendor-card h4 {
+    font-size: 14.5px;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .vendor-card .role {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .vendor-card ul { padding-left: 18px; font-size: 13px; color: var(--muted); }
+  .vendor-card ul li { margin-bottom: 3px; }
+
+  .check-table td:first-child { font-weight: 600; color: var(--primary); white-space: nowrap; }
+
+  .callout {
+    background: #eaf2f8;
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 18px;
+    font-size: 13.5px;
+    color: var(--primary);
+    margin: 14px 0;
+  }
+  .callout-warn {
+    background: var(--warn-bg);
+    border-left-color: var(--warn);
+    color: #922b21;
+  }
+
+  .flow-row { margin: 18px 0; }
+  .flow-title {
+    font-size: 13px; font-weight: 700; color: var(--primary);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .flow-title::before {
+    content: ""; width: 4px; height: 16px;
+    background: var(--accent); border-radius: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 28px 20px; }
+    .hero h1 { font-size: 22px; }
+    .body { padding: 16px 14px 20px; }
+    section > h2 { padding: 13px 16px; font-size: 16px; }
+    .steps .step { font-size: 11.5px; min-width: 90px; }
+    th, td { padding: 7px 8px; font-size: 12.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <h1>驱动电机定子 · 零件知识手册</h1>
+    <p>驱动电机定子（Stator）是新能源汽车电驱动系统的核心结构件与功能件，承担着产生旋转磁场、承载绕组电流、散热与机械支撑等关键功能。本手册聚焦扁线（Hairpin/发卡式）定子主流技术路线，系统梳理供应商格局、加工过程、关键控制点、检查方法及常见风险，供工艺、质量及采购人员参考。</p>
+    <div class="tags">
+      <span>扁线定子（Hairpin）</span>
+      <span>铁芯叠压</span>
+      <span>发卡成型</span>
+      <span>激光焊接</span>
+      <span>VPI绝缘</span>
+      <span>电性能检测</span>
+    </div>
+  </div>
+
+  <nav class="toc">
+    <strong style="color:var(--primary)">快速导航：</strong>
+    <a href="#supplier">一、供应商格局</a>
+    <a href="#process">二、加工过程</a>
+    <a href="#kcp">三、关键控制点</a>
+    <a href="#inspect">四、检查方法</a>
+    <a href="#risk">五、常见风险与问题</a>
+    <a href="#summary">六、质量管控要点总结</a>
+  </nav>
+
+  <section id="supplier">
+    <h2><span class="num">1</span>供应商格局与分工</h2>
+    <div class="body">
+      <p>驱动电机定子的供应链通常分为<strong>铁芯制造商</strong>、<strong>绕组/整线设备供应商</strong>、<strong>绝缘材料与检测设备供应商</strong>三个层次。主机厂或Tier1通常在铁芯基础上自行或委托完成绕线、嵌线、焊接、绝缘处理等工序。</p>
+
+      <div class="vendor-grid">
+        <div class="vendor-card">
+          <h4>定转子铁芯制造商</h4>
+          <div class="role">冲片 → 叠压 → 铁芯成品</div>
+          <ul>
+            <li>江苏通达动力：以定转子铁芯制造为主体，覆盖模具设计、冲片加工、铁心叠压、成品深加工等完整环节，已建成智能制造车间，掌握自粘接、激光焊接、级进冲铆接、自动化叠压等关键工艺，新能源汽车电机冲片铁芯产品实现100%自动化。</li>
+            <li>佛山传恒机电：专业定制各类冲压电机铁芯，涵盖定转子铁芯、盘式铁芯、分段拼接铁芯，配套环氧绝缘涂覆、全自动定子绕线全流程加工。</li>
+            <li>东莞佰思特：专注新能源汽车轮毂电机定子、盘式电机定子、绕线及相关产品的铁芯制造。</li>
+          </ul>
+        </div>
+        <div class="vendor-card">
+          <h4>定子整线/关键设备供应商</h4>
+          <div class="role">线成型 → 插线 → 焊接 → 检测</div>
+          <ul>
+            <li>柯马（Comau）：提供Hairpin扁线定子整线交钥匙方案，涵盖线成型、插线、扩口、扭头、激光焊接、质量测试和电性能检查全流程。核心设备（线成型、插线、扩口、扭头、切平、焊接）由柯马中国自主研发。</li>
+            <li>江苏本格自动化：电机定子自动化设备商，产品包括绕嵌一体机、插纸机、绕线机、嵌线机、整形机、绑线机、检测设备等。</li>
+            <li>浙江巨龙自动化：ZRQ-2型绕线嵌线一体机，绕线、入槽契、嵌线集成一体，PLC程控，伺服电机定位。</li>
+          </ul>
+        </div>
+        <div class="vendor-card">
+          <h4>绝缘材料/检测方案供应商</h4>
+          <div class="role">漆包线 · 绝缘纸 · 检测仪器</div>
+          <ul>
+            <li>扁铜线供应商：高纯度无氧铜（纯度≥99.95%），绝缘漆膜需通过PDIV及耐温等级验证。</li>
+            <li>绝缘纸/槽绝缘材料：聚酰亚胺薄膜、Nomex纸等，成型形式包括O形、C形、B形、S形。</li>
+            <li>检测设备：三坐标测量仪、X射线探伤、涡流测厚仪、高压脉冲匝间测试仪、微欧计、红外热像仪等。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>供应商选择要点：</strong>铁芯供应商需具备IATF16949体系认证和CNAS认可实验室能力；整线设备供应商需有扁线定子量产案例；扁铜线供应商的漆膜与浸渍漆兼容性需通过专项验证试验（详见风险章节）。
+      </div>
+    </div>
+  </section>
+
+  <section id="process">
+    <h2><span class="num">2</span>加工过程（扁线定子主流路线）</h2>
+    <div class="body">
+
+      <div class="flow-row">
+        <div class="flow-title">总体工艺流程</div>
+        <div class="steps">
+          <div class="step">备料/切头</div>
+          <div class="step">U型线成型</div>
+          <div class="step">插槽绝缘纸</div>
+          <div class="step">插线</div>
+          <div class="step">扩口/扭头</div>
+          <div class="step">切平</div>
+          <div class="step">激光焊接</div>
+          <div class="step">BUSBAR/端子焊接</div>
+          <div class="step">绝缘处理</div>
+          <div class="step">电性能检测</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 8px;">2.1 铁芯制造（来料/前置工序）</h3>
+      <table>
+        <tr><th style="width:22%">工序</th><th>过程说明</th><th style="width:30%">关键参数/要求</th></tr>
+        <tr>
+          <td>冲片</td>
+          <td>高牌号硅钢片经级进模冲压成型，形成定子槽形与外形。</td>
+          <td>槽型精度与扁线绕组配合公差≤0.05mm；毛刺高度≤0.05mm</td>
+        </tr>
+        <tr>
+          <td>叠压</td>
+          <td>按冲制方向叠片，毛刺方向一致，同号槽叠在一起；可采用自粘接、激光焊接或铆接固定。</td>
+          <td>叠压力300～500kN；铁芯长度公差±0.5mm；叠压后紧密度、准确度、牢固性达标</td>
+        </tr>
+        <tr>
+          <td>绝缘涂覆</td>
+          <td>铁芯表面环氧绝缘涂覆，提升冲片间绝缘能力。</td>
+          <td>涂层均匀，无漏涂；固化后厚度符合图纸</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 8px;">2.2 扁线成型（发卡成型）</h3>
+      <table>
+        <tr><th style="width:22%">工序</th><th>过程说明</th><th style="width:30%">关键参数/要求</th></tr>
+        <tr>
+          <td>备料/切头</td>
+          <td>扁铜线按定长切断，端部去漆（激光剥漆或化学腐蚀）。</td>
+          <td>切头平面度≤0.2mm；去漆长度一致，无铜屑残留</td>
+        </tr>
+        <tr>
+          <td>U型线/异形线成型</td>
+          <td>数控折弯机将扁线加工为U型或W型发卡结构，两端折弯半径匹配定子槽型。</td>
+          <td>发卡尺寸公差±0.05mm；拐角半径通常3-5mm；直线段长度误差≤0.1mm</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 8px;">2.3 插槽绝缘纸与插线</h3>
+      <table>
+        <tr><th style="width:22%">工序</th><th>过程说明</th><th style="width:30%">关键参数/要求</th></tr>
+        <tr>
+          <td>插槽绝缘纸</td>
+          <td>在定子槽内插入成型绝缘纸（O/C/B/S形），隔离扁线与铁芯。</td>
+          <td>绝缘纸伸出铁芯端面长度一致；槽口绝缘无翻边/破损</td>
+        </tr>
+        <tr>
+          <td>插线</td>
+          <td>将成型发卡按相序（A/B/C相）逐组插入定子槽，可采用手工、半自动或自动插线。</td>
+          <td>槽满率通常≥70%；插入时无漆膜刮伤；相序排列正确</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 8px;">2.4 扩口、扭头与切平</h3>
+      <table>
+        <tr><th style="width:22%">工序</th><th>过程说明</th><th style="width:30%">关键参数/要求</th></tr>
+        <tr>
+          <td>扩口/扭头</td>
+          <td>将发卡端部向外扩口后扭型，使相邻发卡端头对齐，为焊接做准备。</td>
+          <td>扭头角度精度影响端部高度一致性；模具同步控制；漆膜无挤压损伤</td>
+        </tr>
+        <tr>
+          <td>切平</td>
+          <td>将扭头后的端头切平至统一平面，保证焊接端面质量。</td>
+          <td>切面平面度≤0.2mm；切面无铜屑、无毛刺</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 8px;">2.5 焊接</h3>
+      <table>
+        <tr><th style="width:22%">焊接类型</th><th>过程说明</th><th style="width:30%">关键参数/要求</th></tr>
+        <tr>
+          <td>扁线端部激光焊接</td>
+          <td>发卡两端出头通过激光焊接形成三相绕组回路，焊点位于定子端部。</td>
+          <td>焊点直径≤0.3mm；熔深≥导线厚度80%；气孔直径≤0.1mm且数量≤3个；热影响区宽度≤0.2mm</td>
+        </tr>
+        <tr>
+          <td>BUSBAR/三相端子焊接</td>
+          <td>连接线、BUSBAR与三相端子焊接，形成完整电气回路。</td>
+          <td>接触电阻≤同等长度导线电阻1.1倍；拉力测试达标</td>
+        </tr>
+        <tr>
+          <td>热敏电阻安装</td>
+          <td>在定子绕组指定位置安装温度传感器（热敏电阻）。</td>
+          <td>位置准确；引线固定可靠；绝缘电阻符合GB18488要求</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 8px;">2.6 绝缘处理</h3>
+      <table>
+        <tr><th style="width:22%">工序</th><th>过程说明</th><th style="width:30%">关键参数/要求</th></tr>
+        <tr>
+          <td>真空压力浸漆（VPI）</td>
+          <td>定子浸入环氧树脂漆，真空抽气后加压灌注，填充绕组间隙，形成整体绝缘层。</td>
+          <td>真空度1-3 Torr；正压≥0.5MPa；固化120-180℃/4-8h</td>
+        </tr>
+        <tr>
+          <td>固化/烘焙</td>
+          <td>高温烘烤使漆液完全固化，挂漆量影响绝缘与散热性能。</td>
+          <td>漆膜无气泡、无漏涂；挂漆量符合工艺规定</td>
+        </tr>
+      </table>
+
+    </div>
+  </section>
+
+  <section id="kcp">
+    <h2><span class="num">3</span>关键控制点（KCP）</h2>
+    <div class="body">
+      <p>以下为扁线定子制造过程中<strong>直接影响电性能、绝缘可靠性和长期耐久性</strong>的关键控制点，需在工艺文件和质量计划中重点管控。</p>
+
+      <table>
+        <tr>
+          <th style="width:18%">控制点</th>
+          <th style="width:30%">控制内容</th>
+          <th style="width:26%">控制标准/目标值</th>
+          <th>失效后果</th>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-1</span> 槽型精度</td>
+          <td>定子槽尺寸与扁线绕组的配合公差</td>
+          <td>配合公差≤0.05mm</td>
+          <td>嵌线时绝缘破损、匝间短路</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-2</span> 发卡成型精度</td>
+          <td>发卡尺寸、拐角角度、直线段长度</td>
+          <td>尺寸公差±0.05mm；拐角角度合格</td>
+          <td>插线困难、端部高度不一致、焊接错位</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-3</span> 插线槽满率</td>
+          <td>扁线在槽内的排列紧密程度</td>
+          <td>槽满率≥70%；无交叉、无漆膜刮伤</td>
+          <td>槽满率不足影响功率密度；刮伤导致匝间短路</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-4</span> 扭头角度与端部高度</td>
+          <td>扭头角度一致性、端部切平平面度</td>
+          <td>切面平面度≤0.2mm</td>
+          <td>焊接间隙过大或错位，焊点强度不足</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-5</span> 激光焊接质量</td>
+          <td>熔深、气孔、热影响区、拉力</td>
+          <td>熔深≥80%线厚；气孔≤0.1mm/≤3个；拉力≥标准值</td>
+          <td>焊点脱落、接触电阻增大、局部过热</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-6</span> 绝缘漆膜完整性</td>
+          <td>扁铜线漆膜厚度、PDIV、去漆区绝缘</td>
+          <td>PDIV≥500V（高频≥1000V）；漆膜无横向裂纹</td>
+          <td>匝间短路、相间短路、绕组烧蚀</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-7</span> VPI浸漆渗透性</td>
+          <td>真空度、压力、保压时间、漆液温度</td>
+          <td>真空1-3 Torr；压力≥0.5MPa；挂漆量达标</td>
+          <td>绝缘层内部空洞、局部放电、耐压击穿</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-8</span> 漆膜与浸渍漆兼容性</td>
+          <td>扁铜线漆膜材质与绝缘漆的化学兼容性</td>
+          <td>通过兼容性试验，无漆膜溶胀/开裂</td>
+          <td>漆膜横向裂纹→相间短路→绕组烧蚀</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-9</span> 三相电阻平衡度</td>
+          <td>三相绕组直流电阻一致性</td>
+          <td>三相不平衡度≤1%（部分标准≤±2%）</td>
+          <td>电流不平衡、局部过热、效率下降</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-key">KCP-10</span> 对地绝缘</td>
+          <td>定子绕组对铁芯/机壳的绝缘电阻</td>
+          <td>冷态/热态绝缘电阻符合GB18488（热态≥0.38 MΩ）</td>
+          <td>对地击穿、漏电、安全事故</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="inspect">
+    <h2><span class="num">4</span>检查方法与检测手段</h2>
+    <div class="body">
+
+      <h3 style="font-size:15px;color:var(--primary);margin:0 0 10px;">4.1 尺寸与外观检查</h3>
+      <table class="check-table">
+        <tr><th style="width:24%">检查项目</th><th style="width:36%">检查方法/设备</th><th>判定标准</th></tr>
+        <tr>
+          <td>定子槽尺寸</td>
+          <td>三坐标测量仪（CMM）</td>
+          <td>与扁线配合公差≤0.05mm</td>
+        </tr>
+        <tr>
+          <td>发卡尺寸/拐角</td>
+          <td>三维扫描仪；投影仪</td>
+          <td>公差≤±0.05mm；拐角角度符合图纸</td>
+        </tr>
+        <tr>
+          <td>铁芯长度/叠压</td>
+          <td>卡尺/高度规；紧密度检查</td>
+          <td>长度L±0.5mm；叠压牢固无松动</td>
+        </tr>
+        <tr>
+          <td>漆膜厚度/去漆区</td>
+          <td>涡流测厚仪；目视+放大镜</td>
+          <td>漆膜厚度符合图纸；去漆区长度一致、无铜屑</td>
+        </tr>
+        <tr>
+          <td>焊点外观</td>
+          <td>工业相机/视觉检测系统；X射线探伤</td>
+          <td>焊点圆润无飞溅；熔深≥80%；气孔达标</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 10px;">4.2 电性能检查</h3>
+      <table class="check-table">
+        <tr><th style="width:24%">检查项目</th><th style="width:36%">检查方法/设备</th><th>判定标准</th></tr>
+        <tr>
+          <td>直流电阻</td>
+          <td>双臂电桥/微欧计</td>
+          <td>三相不平衡度≤1%；相电阻符合技术文件</td>
+        </tr>
+        <tr>
+          <td>交流电感</td>
+          <td>LCR表（100Hz-10kHz）</td>
+          <td>电感值符合设计值；三相一致性达标</td>
+        </tr>
+        <tr>
+          <td>匝间绝缘</td>
+          <td>高压脉冲振荡比较法（1000-3000V脉冲）</td>
+          <td>各相波形差异≤5%；面积差/相位差在阈值内</td>
+        </tr>
+        <tr>
+          <td>对地耐压</td>
+          <td>工频耐压测试仪</td>
+          <td>3000V/1min，漏电流≤1mA</td>
+        </tr>
+        <tr>
+          <td>绝缘电阻</td>
+          <td>绝缘电阻测试仪（500VDC/1000VDC）</td>
+          <td>冷态/热态绝缘电阻符合GB18488规定</td>
+        </tr>
+        <tr>
+          <td>焊点接触电阻</td>
+          <td>微欧计</td>
+          <td>≤同等长度导线电阻的1.1倍</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 10px;">4.3 绝缘系统专项检查</h3>
+      <table class="check-table">
+        <tr><th style="width:24%">检查项目</th><th style="width:36%">检查方法/设备</th><th>判定标准</th></tr>
+        <tr>
+          <td>PDIV（局部放电起始电压）</td>
+          <td>局部放电测试仪</td>
+          <td>≥500V；高频工况≥1000V</td>
+        </tr>
+        <tr>
+          <td>绝缘层完整性</td>
+          <td>红外热像仪；目视</td>
+          <td>无漏涂导致的局部放电热点</td>
+        </tr>
+        <tr>
+          <td>灌封气密性</td>
+          <td>气密性测试（0.5MPa气压）</td>
+          <td>泄漏量≤5cc/min</td>
+        </tr>
+        <tr>
+          <td>漆膜耐温等级</td>
+          <td>热老化试验（200℃×1000h）</td>
+          <td>老化后击穿电压保留率≥80%</td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 10px;">4.4 过程在线检测（推荐配置）</h3>
+      <table class="check-table">
+        <tr><th style="width:24%">检测环节</th><th style="width:36%">检测手段</th><th>目的</th></tr>
+        <tr>
+          <td>绕线张力在线监测</td>
+          <td>张力传感器（通常5-10N）</td>
+          <td>防止张力过大拉断导线或过小导致绕组松散</td>
+        </tr>
+        <tr>
+          <td>嵌线视觉检测</td>
+          <td>工业相机+AI算法</td>
+          <td>检查槽内导线排列，确保无交叉、破损，槽满率达标</td>
+        </tr>
+        <tr>
+          <td>焊点在线检测</td>
+          <td>深度学习/AI视觉系统</td>
+          <td>自动识别不良焊点并回流补焊</td>
+        </tr>
+        <tr>
+          <td>线伤在线检测</td>
+          <td>激光/视觉传感器</td>
+          <td>实时识别漆包线刮伤缺陷</td>
+        </tr>
+        <tr>
+          <td>焊接过程传感监测</td>
+          <td>光电二极管信号+中央控制模块</td>
+          <td>建立激光参数-监测信号-焊接质量映射模型，实时预测质量</td>
+        </tr>
+      </table>
+
+    </div>
+  </section>
+
+  <section id="risk">
+    <h2><span class="num">5</span>常见风险与问题</h2>
+    <div class="body">
+
+      <h3 style="font-size:15px;color:var(--primary);margin:0 0 6px;">5.1 绝缘失效类（最高风险等级）</h3>
+      <div class="risk-grid">
+        <div class="risk-card">
+          <h4>绕组烧蚀（漆膜与绝缘漆不兼容）</h4>
+          <p>扁铜线漆膜与绝缘漆不兼容，导致漆膜产生横向裂纹，在高湿/高温环境下加剧损伤，最终相间短路烧蚀。</p>
+          <div class="cause">▸ 成因：漆膜/绝缘漆选型不当；油封失效导致油气进入绕组区域</div>
+          <div class="cause">▸ 措施：更换兼容性漆膜与绝缘漆；增加泄压孔；更换油封材料</div>
+        </div>
+        <div class="risk-card">
+          <h4>匝间短路</h4>
+          <p>绕组匝间绝缘退化，引起局部电流异常、温升加剧，严重时导致电机失效。</p>
+          <div class="cause">▸ 成因：热应力、机械应力、电源浪涌、异物侵入导致绝缘退化</div>
+          <div class="cause">▸ 措施：严格控制嵌线过程漆膜损伤；匝间耐压100%检测</div>
+        </div>
+        <div class="risk-card">
+          <h4>绝缘层局部放电</h4>
+          <p>VPI浸漆渗透不充分或存在空洞，在高频高压下产生局部放电，逐步侵蚀绝缘。</p>
+          <div class="cause">▸ 成因：真空度/压力不足；漆液粘度过高；云母带与浸渍漆相容性差</div>
+          <div class="cause">▸ 措施：优化VPI参数；PDIV抽检；红外热像仪排查热点</div>
+        </div>
+        <div class="risk-card">
+          <h4>对地绝缘击穿</h4>
+          <p>绕组与铁芯之间绝缘失效，导致漏电或短路，直接威胁整车安全。</p>
+          <div class="cause">▸ 成因：槽绝缘纸破损或移位；铁芯毛刺刺穿绝缘；浸漆未填充间隙</div>
+          <div class="cause">▸ 措施：槽绝缘100%外观检查；对地耐压100%测试；毛刺控制</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 6px;">5.2 焊接质量类</h3>
+      <div class="risk-grid">
+        <div class="risk-card">
+          <h4>焊点气孔/虚焊</h4>
+          <p>激光焊接参数不稳定或端面清洁度不足，导致焊点内部气孔或熔深不足，接触电阻增大。</p>
+          <div class="cause">▸ 成因：激光功率波动、保护气体流量不当、端面铜屑/氧化</div>
+          <div class="cause">▸ 措施：X射线抽检；在线传感监测；切平后清洁度管控</div>
+        </div>
+        <div class="risk-card">
+          <h4>焊点热影响区过大</h4>
+          <p>热影响区过宽导致邻近漆膜热损伤，形成潜在的匝间短路风险。</p>
+          <div class="cause">▸ 成因：激光能量密度过高、焊接速度过慢</div>
+          <div class="cause">▸ 措施：热影响区宽度≤0.2mm；焊后目视+放大镜检查</div>
+        </div>
+        <div class="risk-card">
+          <h4>扭头错位导致焊接不良</h4>
+          <p>扭头角度偏差使相邻发卡端头错位，焊接时无法有效熔合。</p>
+          <div class="cause">▸ 成因：扭头模具磨损；扩口不均匀；发卡成型尺寸超差</div>
+          <div class="cause">▸ 措施：定期校验扭头模具；三维扫描抽检发卡</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 6px;">5.3 制造过程类</h3>
+      <div class="risk-grid">
+        <div class="risk-card">
+          <h4>嵌线漆膜刮伤</h4>
+          <p>扁线插入定子槽时，槽口或绝缘纸边缘刮伤漆膜，形成匝间短路隐患。</p>
+          <div class="cause">▸ 成因：槽口毛刺、绝缘纸翻边、插入速度过快</div>
+          <div class="cause">▸ 措施：槽口去毛刺；绝缘纸成型检查；在线线伤检测</div>
+        </div>
+        <div class="risk-card">
+          <h4>铁芯叠压缺陷</h4>
+          <p>叠压力不足导致冲片间隙大、漏磁通增加；叠压力过大压溃涂层，铁损升高。</p>
+          <div class="cause">▸ 成因：叠压力控制不当；冲片毛刺超标；叠片方向不一致</div>
+          <div class="cause">▸ 措施：叠压力300-500kN；毛刺≤0.05mm；按冲制方向叠片</div>
+        </div>
+        <div class="risk-card">
+          <h4>槽满率不足或超差</h4>
+          <p>槽满率低于设计要求影响功率密度；超差则导致嵌线困难、绝缘破损。</p>
+          <div class="cause">▸ 成因：发卡尺寸超差；绝缘纸厚度波动；槽型精度不足</div>
+          <div class="cause">▸ 措施：发卡尺寸100%检测；绝缘纸来料抽检；CMM槽型检测</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;color:var(--primary);margin:22px 0 6px;">5.4 其他风险</h3>
+      <div class="risk-grid">
+        <div class="risk-card">
+          <h4>热敏电阻绝缘失效</h4>
+          <p>温度传感器与绕组/铁芯之间的绝缘电阻不达标，影响温度监测准确性。</p>
+          <div class="cause">▸ 成因：热敏电阻引线绝缘破损；安装位置不当</div>
+          <div class="cause">▸ 措施：GB18488要求检测定子绕组对温度传感器的绝缘电阻</div>
+        </div>
+        <div class="risk-card">
+          <h4>BUSBAR焊接接触不良</h4>
+          <p>BUSBAR与扁线端子焊接不充分，接触电阻超标，运行中局部发热。</p>
+          <div class="cause">▸ 成因：焊接面氧化/污染；焊接参数不匹配</div>
+          <div class="cause">▸ 措施：焊接面清洁度管控；微欧计100%检测接触电阻</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="summary">
+    <h2><span class="num">6</span>质量管控要点总结</h2>
+    <div class="body">
+      <div class="callout">
+        <strong>三条主线：</strong>① <strong>尺寸链管控</strong>——从槽型精度→发卡成型→插线→扭头→焊接，每一环节的尺寸偏差都会累积，必须在各工序设置独立检测关卡；② <strong>绝缘完整性</strong>——扁铜线漆膜、槽绝缘纸、VPI浸漆三者构成绝缘体系，任一环节失效均可能导致匝间/相间/对地短路，需从材料选型、工艺参数到100%耐压检测全程闭环；③ <strong>焊接可靠性</strong>——焊点质量直接决定电机的电性能和长期可靠性，需采用在线传感监测+AI视觉检测+抽检X射线的组合策略。
+      </div>
+      <div class="callout callout-warn">
+        <strong>特别提醒：</strong>扁铜线漆膜与浸渍漆的兼容性是近年批量质量事故的高发点。建议在新产品开发阶段即开展兼容性专项验证试验（含高温油雾环境模拟），并将结果纳入供应商准入技术要求。该风险在早期不易通过常规检测发现，一旦量产暴露，整改成本极高。
+      </div>
+
+      <table style="margin-top:18px;">
+        <tr><th style="width:18%">阶段</th><th>核心管控动作</th></tr>
+        <tr><td>来料检验</td><td>硅钢片铁损/磁感复检；扁铜线漆膜厚度/PDIV抽检；绝缘纸击穿电压抽检</td></tr>
+        <tr><td>过程检验</td><td>首件三坐标检测；发卡尺寸SPC监控；槽满率视觉检测；焊点在线监测</td></tr>
+        <tr><td>终检</td><td>100%匝间耐压；100%对地耐压；100%直流电阻；抽样PDIV/气密性</td></tr>
+        <tr><td>型式试验</td><td>热老化试验；兼容性专项验证；振动耐久；温升试验</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <footer style="text-align:center;font-size:12px;color:#95a5a6;margin-top:32px;">
+    驱动电机定子零件知识手册 · 基于扁线（Hairpin）定子主流工艺路线整理 · 供内部培训与质量参考使用
+  </footer>
+
+</div>
+</body>
+</html>
